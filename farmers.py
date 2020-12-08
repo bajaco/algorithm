@@ -41,7 +41,7 @@ def get_days_of_power(R1,D1,R2,D2,R3,D3,k):
                 loans.remove(loan)
         
         # k must afford the rate, and the rate must be greater than 0
-        if k >= rate and rate > 0:
+        if rate > 0:
             k -= rate
             days_on += 1
         
