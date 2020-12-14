@@ -1,3 +1,5 @@
+import time
+import random
 '''
 The explanation denotes that D# means 'starts in D# days'.
 
@@ -50,6 +52,101 @@ def get_days_of_power(R1,D1,R2,D2,R3,D3,k):
 
     return days_on
 
+def get_days_of_power_large(*args):
+    
+    # Not necessary, but for readability
+    loans = []
+    loan = {}
+    k = 0
+    for i, arg in enumerate(args):
+        if i == len(args) - 1:
+            k = arg
+        elif i % 2 == 0:
+            loan['rate'] = arg
+        else:
+            loan['day'] = arg
+            loans.append(loan)
+            loan = {}
+            
+    rate = 0
+    today = 0 
+    days_on = 0
+    while k >= rate:
+
+        # removes loans if their rates have been added to prevent unnecessary checks
+        for loan in loans[:]:
+            if today == loan['day']:
+                rate += loan['rate']
+                loans.remove(loan)
+        
+        # k must afford the rate, and the rate must be greater than 0
+        if rate > 0:
+            k -= rate
+            days_on += 1
+        
+        # increment day
+        today += 1
+
+    return days_on
+
+def add_rate_to_rate_days(rate_days, day, rate):
+    if day in rate_days:
+        rate_days[day] += rate
+    else:
+        rate_days[day] = rate
+
+def get_days_of_power_2(R1,D1,R2,D2,R3,D3,k):
+    rate_days = {}
+    add_rate_to_rate_days(rate_days, D1, R1)
+    add_rate_to_rate_days(rate_days, D2, R2)
+    add_rate_to_rate_days(rate_days, D3, R3)
+    today = 0
+    rate = 0
+    days_on = 0
+    while True:
+        if today in rate_days:
+            rate += rate_days[today]
+            rate_days.pop(today)
+        if rate > 0:
+            if k - rate >= 0:
+                k -= rate
+                days_on += 1
+            else:
+                break
+        today += 1
+    return days_on
+
+def get_days_of_power_2_large(*args):
+    rate_days = {}
+    D = 0 
+    R = 0
+    k = 0
+    for i, arg in enumerate(args):
+        if i == len(args) - 1:
+            k = arg
+        elif i % 2 == 0:
+            R = arg
+        else:
+            D = arg
+            add_rate_to_rate_days(rate_days, D, R)
+    today = 0
+    rate = 0
+    days_on = 0
+    while True:
+        if today in rate_days:
+            rate += rate_days[today]
+            rate_days.pop(today)
+        if rate > 0:
+            if k - rate >= 0:
+                k -= rate
+                days_on += 1
+            else:
+                break
+        today += 1
+    return days_on
+
+
+
 # Test for the example problem
 print('Example Problem')
 a = get_days_of_power(1000,3,500,10,1500,7,21000)
@@ -72,8 +169,33 @@ problems = [
         [1300,0,500,0,1500,7,10000],
         [10000,3,500,10,1500,7,11000]
         ]
+problems2 = []
+for i in range(100):
+    problem = []
+    for j in range(3000):
+        # Random rate 1-2000
+        problem.append(random.randint(1,20000))
+        # Random day 0-100
+        problem.append(random.randint(0,1000))
+    # Random time range 100000000-1000000000
+    problem.append(random.randint(100000000,1000000000))
+    problems2.append(problem)
 
 print('Problem set')
 print(test_function(problems, get_days_of_power))
+print(test_function(problems, get_days_of_power_2))
 
+print('Calculating times for both function versions\n')
+
+start = time.perf_counter()
+print(test_function(problems2, get_days_of_power_large))
+dur = time.perf_counter() - start
+print(f'{dur} seconds with original function\n')
+
+start = time.perf_counter()
+print(test_function(problems2, get_days_of_power_2_large))
+dur2 = time.perf_counter() - start
+print(f'{dur2} seconds with improved function')
+
+print(f'The improved algorithm was {dur/dur2} times faster than the original.')
 
